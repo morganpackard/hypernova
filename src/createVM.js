@@ -1,4 +1,5 @@
 import lruCache from 'lru-cache';
+import { ok } from 'assert';
 import crypto from 'crypto';
 import Module from './Module';
 
@@ -20,18 +21,36 @@ export default (options = {}) => {
   return {
     exportsCache,
 
-    run(name, code) {
+    run(name, code, runOptions = {}) {
       const key = getKey(name, code);
 
-      if (exportsCache.has(key)) return exportsCache.get(key);
+      if (!runOptions.preferCachedInializer && exportsCache.has(key)) return exportsCache.get(key);
 
       const environment = options.environment && options.environment(name);
+      const moduleOptions = {
+        id: name,
+        parent: environment,
+        preferCachedInializer: runOptions.preferCachedInializer,
+      };
 
-      const module = new Module(name, environment);
+      if (runOptions.globals) {
+        ok(runOptions.useGlobalContext, 'if you set globals you must use the global context');
+        moduleOptions.context = runOptions.globals;
+      }
+
+      if (runOptions.useGlobalContext) {
+        moduleOptions.useGlobalContext = true;
+        Module.initGlobalContext(runOptions.globals || {});
+      }
+
+      const module = new Module(moduleOptions);
       module.load(name);
+      // eslint-disable-next-line no-underscore-dangle
       module._compile(code, name);
 
-      exportsCache.set(key, module.exports);
+      if (!runOptions.preferCachedInializer) {
+        exportsCache.set(key, module.exports);
+      }
 
       return module.exports;
     },

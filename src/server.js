@@ -30,6 +30,17 @@ export default function hypernova(userConfig, onServer) {
     throw new TypeError('Hypernova requires a `getComponent` property and it must be a function');
   }
 
+  // optionally expose some functions to whoever's instiating hypernova.
+  // Preferring this over slapping properties on to 'app', which is an express
+  // app and maybe shouldn't know anything about hypernova.
+  // TODO - clearInitializerCache currently affects only the worker on which it  is called.
+  // We plan to broadcast the functional call across all workers.
+  if (config.getApi) {
+    config.getApi({
+      clearModuleInitializerCache: Module.clearInitializerCache,
+    });
+  }
+
   logger.init(config.logger);
 
   const app = express();

@@ -4,10 +4,12 @@ import { createGetComponent } from '../server';
 
 describe('createGetComponent', () => {
   const files = {
+    stateful_module: path.resolve(path.join('test', 'components', 'stateful_module.js')),
     HypernovaExample: path.resolve(path.join('test', 'components', 'HypernovaExample.js')),
   };
 
   const getComponent = createGetComponent(files);
+  console.log(files.HypernovaExample);
 
   it('returns the module if it exists', () => {
     const component = getComponent('HypernovaExample');

@@ -35,3 +35,5 @@ node_modules
 TODO
 coverage
 lib
+
+.realsync
